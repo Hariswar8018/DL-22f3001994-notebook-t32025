@@ -103,7 +103,7 @@ CNNs can capture local patterns and n-gram features efficiently, making them exc
 
 ```python
 TextCNN(
-  vocab_size=[YOUR_VOCAB_SIZE],
+  vocab_size=vocab_size,
   embed_dim=128,
   kernel_sizes=(3, 4, 5),      # Captures 3-gram, 4-gram, 5-gram patterns
   num_filters=64,               # 64 filters per kernel size
@@ -130,17 +130,18 @@ TextCNN(
 - ✅ Low computational requirements
 
 **Training Configuration:**
-- Optimizer: **[AdamW/Adam]**
-- Learning Rate: **[YOUR_LR]**
-- Batch Size: **[YOUR_BATCH_SIZE]**
-- Epochs: **[YOUR_EPOCHS]**
+- Optimizer: **Adam**
+- Learning Rate: **1e-3**
+- Batch Size: **32**
+- Epochs: **25**
 - Loss Function: **BCEWithLogitsLoss**
+- Final Training Loss: **0.01695**
 
 **Performance:**
-- Training F1: **[XX.XX]%**
-- Validation F1: **[XX.XX]%**
-- Test F1: **[XX.XX]%**
-- Training Time: **[XX] minutes**
+- Training F1: **71.00%**
+- Validation F1: **71.15%**
+- Test F1: **71.00%**
+- Parameters: ~150K
 
 ---
 
@@ -153,7 +154,7 @@ GRUs excel at modeling sequential dependencies, crucial for understanding how em
 
 ```python
 GRUNet(
-  vocab_size=[YOUR_VOCAB_SIZE],
+  vocab_size=vocab_size,
   embed_dim=128,
   hidden_size=128,
   num_layers=1,
@@ -192,16 +193,17 @@ For input "I am absolutely devastated":
 
 **Training Configuration:**
 - Optimizer: **AdamW**
-- Learning Rate: **[YOUR_LR]**
-- Batch Size: **[YOUR_BATCH_SIZE]**
-- Epochs: **[YOUR_EPOCHS]**
+- Learning Rate: **1e-3**
+- Batch Size: **32**
+- Epochs: **25**
 - Loss Function: **BCEWithLogitsLoss**
+- Final Training Loss: **0.03210**
 
 **Performance:**
-- Training F1: **[XX.XX]%**
-- Validation F1: **[XX.XX]%**
-- Test F1: **[XX.XX]%**
-- Training Time: **[XX] minutes**
+- Training F1: **70.00%**
+- Validation F1: **69.24%**
+- Test F1: **69.00%**
+- Parameters: ~200K
 
 ---
 
@@ -214,7 +216,7 @@ BiLSTM's sophisticated memory cells can capture long-range dependencies and subt
 
 ```python
 BiLSTM(
-  vocab_size=[YOUR_VOCAB_SIZE],
+  vocab_size=vocab_size,
   embed_dim=128,
   hidden_size=128,
   num_layers=1,
@@ -258,16 +260,17 @@ BiLSTM(
 
 **Training Configuration:**
 - Optimizer: **AdamW**
-- Learning Rate: **[YOUR_LR]**
-- Batch Size: **[YOUR_BATCH_SIZE]**
-- Epochs: **[YOUR_EPOCHS]**
+- Learning Rate: **1e-3**
+- Batch Size: **32**
+- Epochs: **25**
 - Loss Function: **BCEWithLogitsLoss**
+- Final Training Loss: **0.04408**
 
 **Performance:**
-- Training F1: **[XX.XX]%**
-- Validation F1: **[XX.XX]%**
-- Test F1: **[XX.XX]%**
-- Training Time: **[XX] minutes**
+- Training F1: **67.00%**
+- Validation F1: **67.40%**
+- Test F1: **67.00%**
+- Parameters: ~250K
 
 ---
 
@@ -331,31 +334,33 @@ Result: Model understands complex emotional negation
 
 **Training Configuration:**
 - **Tokenizer**: AutoTokenizer (distilbert-base-uncased)
-- **Max Length**: 128 tokens
+- **Max Length**: 200 tokens
 - **Padding**: max_length
 - **Truncation**: Enabled
 - **Batch Size**: 32
-- **Optimizer**: **AdamW** (weight decay for transformers)
-- **Learning Rate**: **[YOUR_LR]** (typically 2e-5 to 5e-5)
-- **Epochs**: **[YOUR_EPOCHS]**
+- **Optimizer**: **AdamW**
+- **Learning Rate**: **1e-2** (higher than typical for transformers)
+- **Epochs**: **25**
 - **Loss Function**: **BCEWithLogitsLoss**
-- **Fine-tuning Strategy**: [Full fine-tuning / Last layers only]
+- **Fine-tuning Strategy**: Full fine-tuning
+- **Final Training Loss**: **0.01117**
 
 **Custom Dataset Implementation:**
 ```python
 BERTDataset:
-- Tokenizes text with padding/truncation
+- Tokenizes text with padding/truncation (max_len=200)
 - Returns: (input_ids, attention_mask, labels)
 - Handles variable-length sequences
 - Batch processing for efficiency
 ```
 
 **Performance:**
-- Training F1: **[XX.XX]%**
-- Validation F1: **[XX.XX]%**
-- Test F1: **[XX.XX]%**
-- Training Time: **[XX] minutes**
-- Inference Speed: **[XX] samples/sec**
+- Training F1: **88.00%**
+- Validation F1: **87.06%**
+- Test F1 (Public): **87.80%**
+- Test F1 (Private): **87.00%**
+- Parameters: ~66M
+- Inference Speed: Fast with GPU acceleration
 
 **Why DistilBERT Often Outperforms Others:**
 1. Pre-trained knowledge of language semantics
@@ -372,9 +377,9 @@ BERTDataset:
 
 | Model | Type | Parameters | Strengths | Best For |
 |-------|------|------------|-----------|----------|
-| **TextCNN** | Convolutional | ~[XX]K | Fast, pattern detection | Keyword-based emotions |
-| **GRU** | Recurrent | ~[XX]K | Sequential modeling | Moderate-length texts |
-| **BiLSTM** | Recurrent | ~[XX]K | Long-term dependencies | Complex sentences |
+| **TextCNN** | Convolutional | ~150K | Fast, pattern detection | Keyword-based emotions |
+| **GRU** | Recurrent | ~200K | Sequential modeling | Moderate-length texts |
+| **BiLSTM** | Recurrent | ~250K | Long-term dependencies | Complex sentences |
 | **DistilBERT** | Transformer | ~66M | Contextual understanding | All cases, best overall |
 
 ### Common Training Setup
@@ -449,10 +454,22 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 LABELS = ['anger', 'fear', 'joy', 'sadness', 'surprise']
 
 # Hyperparameters
+SEED = 42
 BATCH_SIZE = 32
-LR = 2e-5  # Lower for transformers, higher (1e-3) for CNN/RNN
-EPOCHS = 10
-MAX_LEN = 128
+MAX_LEN = 200
+EPOCHS = 25
+
+# Set random seeds for reproducibility
+torch.manual_seed(SEED)
+np.random.seed(SEED)
+
+# Learning rates (model-specific)
+LR_CNN = 1e-3        # TextCNN, GRU, BiLSTM
+LR_TRANSFORMER = 1e-2  # DistilBERT
+
+# Threshold tuning for multi-label classification
+BEST_THRESHOLDS = [0.45, 0.55, 0.40, 0.50, 0.48]  # Per emotion: anger, fear, joy, sadness, surprise
+DEFAULT_THRESHOLD = 0.60  # Initial threshold before tuning
 ```
 
 #### 1. Train TextCNN
@@ -469,8 +486,10 @@ model = TextCNN(
     pad_idx=tokenizer.pad_token_id
 ).to(DEVICE)
 
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.BCEWithLogitsLoss()
+
+# Train for 25 epochs
 ```
 
 #### 2. Train GRU
@@ -534,26 +553,40 @@ optimizer = torch.optim.AdamW(model_bert.parameters(), lr=2e-5)
 ### Inference & Submission
 
 ```python
-# Generate predictions
-def predict(model, dataloader):
+# Generate predictions with optimized thresholds
+def predict(model, dataloader, thresholds=None):
     model.eval()
     predictions = []
+    if thresholds is None:
+        thresholds = [0.5] * 5  # Default threshold
+    
     with torch.no_grad():
         for batch in dataloader:
             input_ids, attention_mask = batch[0].to(DEVICE), batch[1].to(DEVICE)
             outputs = model(input_ids, attention_mask=attention_mask)
-            preds = torch.sigmoid(outputs.logits) > 0.5  # Threshold at 0.5
+            logits = outputs.logits
+            probs = torch.sigmoid(logits)
+            
+            # Apply per-emotion thresholds
+            preds = torch.zeros_like(probs)
+            for i, threshold in enumerate(thresholds):
+                preds[:, i] = (probs[:, i] > threshold).float()
+            
             predictions.extend(preds.cpu().numpy())
     return predictions
+
+# Use optimized thresholds for best performance
+BEST_THRESHOLDS = [0.45, 0.55, 0.40, 0.50, 0.48]  # anger, fear, joy, sadness, surprise
+predictions = predict(model, test_loader, thresholds=BEST_THRESHOLDS)
 
 # Create submission file
 submission = pd.DataFrame({
     'id': test_ids,
-    'anger': predictions[:, 0],
-    'fear': predictions[:, 1],
-    'joy': predictions[:, 2],
-    'sadness': predictions[:, 3],
-    'surprise': predictions[:, 4]
+    'anger': predictions[:, 0].astype(int),
+    'fear': predictions[:, 1].astype(int),
+    'joy': predictions[:, 2].astype(int),
+    'sadness': predictions[:, 3].astype(int),
+    'surprise': predictions[:, 4].astype(int)
 })
 submission.to_csv('submission.csv', index=False)
 ```
@@ -564,48 +597,52 @@ submission.to_csv('submission.csv', index=False)
 
 ### Model Performance Comparison
 
-| Model | Train F1 | Val F1 | Test F1 | Params | Training Time | Inference Speed |
-|-------|----------|--------|---------|--------|---------------|-----------------|
-| **TextCNN** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
-| **GRU** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
-| **BiLSTM** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
-| **DistilBERT** | [XX.XX]% | [XX.XX]% | **[XX.XX]%** | ~66M | [XX] min | [XX] samples/s |
+| Model | Train F1 | Val F1 | Test F1 | Params | Train Loss |
+|-------|----------|--------|---------|--------|------------|
+| **TextCNN** | 71.00% | 71.15% | 71.00% | ~150K | 0.01695 |
+| **GRU** | 70.00% | 69.24% | 69.00% | ~200K | 0.03210 |
+| **BiLSTM** | 67.00% | 67.40% | 67.00% | ~250K | 0.04408 |
+| **DistilBERT** | **88.00%** | **87.06%** | **87.80%** (Public) | ~66M | 0.01117 |
+|  |  |  | **87.00%** (Private) |  |  |
 
 ### Per-Emotion Performance
 
-**[Best Model Name] - Detailed Breakdown:**
+**DistilBERT - Detailed Breakdown (Best Model):**
 
-| Emotion | Precision | Recall | F1-Score | Support |
-|---------|-----------|--------|----------|---------|
-| 😠 Anger | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
-| 😨 Fear | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
-| 😊 Joy | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
-| 😢 Sadness | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
-| 😲 Surprise | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
-| **Macro Avg** | **[XX.XX]%** | **[XX.XX]%** | **[XX.XX]%** | [XXX] |
+| Emotion | Precision | Recall | F1-Score | Optimized Threshold |
+|---------|-----------|--------|----------|---------------------|
+| 😠 Anger | 86.00% | 83.00% | 84.50% | 0.45 |
+| 😨 Fear | 89.00% | 88.00% | 88.50% | 0.55 |
+| 😊 Joy | 92.00% | 89.00% | 90.50% | 0.40 |
+| 😢 Sadness | 85.00% | 84.00% | 84.50% | 0.50 |
+| 😲 Surprise | 87.00% | 82.00% | 84.50% | 0.48 |
+| **Macro Avg** | **87.80%** | **85.20%** | **87.00%** | - |
 
 ### Key Findings
 
-🏆 **Best Overall Performance:** [MODEL_NAME] achieved the highest Macro F1 score of **[XX.XX]%**
+🏆 **Best Overall Performance:** Dobery achieved the highest Macro F1 score of **84.50%**
 
-⚡ **Most Efficient:** [MODEL_NAME] with fastest training time and lowest resource usage
+⚡ **Most Efficient:** GRU with fastest training time and lowest resource usage
 
-🎯 **Best Generalization:** [MODEL_NAME] showed smallest train-validation gap
+🎯 **Best Generalization:** BLISTIN showed smallest train-validation gap
 
-📊 **Challenging Emotions:** [EMOTION_NAME] was hardest to detect across all models
+📊 **Challenging Emotions:** Joy was hardest to detect across all models
+
+
 
 💡 **Key Insights:**
 - **[INSIGHT 1]**: DistilBERT's pre-trained knowledge significantly improved performance on complex emotional expressions
 - **[INSIGHT 2]**: BiLSTM performed well on longer texts with subtle emotional cues
 - **[INSIGHT 3]**: TextCNN was surprisingly effective for texts with clear emotional keywords
-- **[INSIGHT 4]**: [Your specific finding about multi-label combinations]
-- **[INSIGHT 5]**: [Your finding about class imbalance or data augmentation]
+
 
 ### Competition Performance
 
-- **Final Rank:** [YOUR_RANK] / 181 participants
-- **Best Submission:** Macro F1 = **[XX.XX]%**
-- **Number of Submissions:** [YOUR_SUBMISSIONS] / 2,710 total
+- **Final Rank:** 27th out of 200 participants 🏆
+- **Public Leaderboard:** Macro F1 = **87.80%**
+- **Private Leaderboard:** Macro F1 = **87.00%**
+- **Total Submissions:** 40 submissions
+- **Competition:** 2025 Sep DLGenAI Project (IIT Madras)
 
 ---
 
@@ -614,24 +651,28 @@ submission.to_csv('submission.csv', index=False)
 ### Technical Learnings
 
 1. **Multi-Label Classification Challenges**
-   - Each emotion must be predicted independently
-   - BCEWithLogitsLoss is crucial for multi-label tasks
-   - Threshold tuning (default 0.5) can improve performance
+   - Each emotion must be predicted independently with BCEWithLogitsLoss
+   - **Threshold optimization is critical**: Default 0.5 vs optimized [0.45, 0.55, 0.40, 0.50, 0.48] gained ~2% F1
+   - Per-emotion thresholds handle class imbalance better than global threshold
+   - Joy required lower threshold (0.40) due to clearer positive signals
 
 2. **Architecture Selection**
-   - CNNs excel at pattern recognition but lack sequential understanding
-   - RNNs (GRU/LSTM) capture context but struggle with very long sequences
-   - Transformers provide best overall performance but require more resources
+   - CNNs excel at pattern recognition but lack sequential understanding (71% F1)
+   - RNNs (GRU/LSTM) capture context but struggled with this task (67-69% F1)
+   - Transformers provide best overall performance (87% F1) - 16% improvement!
+   - BiLSTM surprisingly underperformed GRU despite being more complex
 
 3. **Transfer Learning Impact**
    - Pre-trained DistilBERT significantly outperformed models trained from scratch
-   - Fine-tuning transformers requires lower learning rates (2e-5 vs 1e-3)
-   - Pre-trained knowledge helps especially with limited training data
+   - **Unconventional finding**: Higher learning rate (1e-2) worked better than typical 2e-5
+   - Longer sequences (MAX_LEN=200) captured more emotional context than standard 128
+   - Fine-tuning all layers was necessary for best performance
 
 4. **Hyperparameter Tuning**
-   - Embedding dimension of 128 provided good balance
+   - Embedding dimension of 128 provided good balance for CNN/RNN models
    - Dropout (0.2) prevented overfitting across all models
-   - Batch size of 32 worked well for all architectures
+   - Batch size of 32 worked consistently well
+   - 25 epochs with early stopping based on validation F1
 
 ### Competition Strategy
 
@@ -725,33 +766,36 @@ This project was completed as part of the **IIT Madras Deep Learning and Generat
 - **Competition Name**: 2025 Sep DLGenAI Project
 - **Platform**: Kaggle (Private Competition)
 - **Duration**: 2 months
-- **Total Participants**: 181
-- **Total Submissions**: 2,710
+- **Total Participants**: 200
+- **Total Submissions**: 2,710 (across all participants)
+- **My Submissions**: 40
 - **Evaluation Metric**: Macro F1-Score
 - **Task**: Multi-label emotion classification (5 emotions)
+- **My Final Rank**: 27th 🏆
 
 ---
 
 ## 🌟 Future Improvements
 
-- [ ] Implement ensemble methods combining all models
-- [ ] Experiment with data augmentation (back-translation, paraphrasing)
-- [ ] Try larger transformers (BERT, RoBERTa, ELECTRA)
-- [ ] Implement focal loss for class imbalance
+- [x] Implement threshold optimization per emotion ✅ (Improved by ~2%)
+- [X] Experiment with ensemble methods combining all models
+- [ ] Try data augmentation (back-translation, paraphrasing with GPT)
+- [ ] Experiment with larger transformers (RoBERTa, ELECTRA, DeBERTa-v3)
+- [ ] Implement focal loss to handle class imbalance better
 - [ ] Add attention visualization for interpretability
-- [ ] Experiment with different threshold values per emotion
-- [ ] Implement cross-validation for robust evaluation
+- [ ] Experiment with different MAX_LEN values (256, 512)
+- [ ] Try label smoothing for better generalization
+- [ ] Implement k-fold cross-validation for robust evaluation
 
 ---
 
 ## 👨‍💻 Author
 
-**[YOUR_NAME]**
+**Ayusman Samasi**
 - IIT Madras - Deep Learning & GenAI (Sep 2025)
-- GitHub: [@your_github](https://github.com/your_github)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/your_profile)
-- Kaggle: [@your_kaggle](https://www.kaggle.com/your_kaggle)
-- Email: your.email@example.com
+- GitHub: [Hariswar8018](https://github.com/Hariswar8018/)
+- LinkedIn: [ayusman-samasi](https://www.linkedin.com/in/ayusman-samasi/)
+- Kaggle: [samasiayushman](https://www.kaggle.com/code/samasiayushman)
 
 ---
 
@@ -770,7 +814,9 @@ If you found this project useful for your learning:
 
 ---
 
-**Competition Status**: ✅ Completed | **Final Score**: [YOUR_F1_SCORE] | **Rank**: [YOUR_RANK]/181
+### **Competition Status**: ✅ Completed 
+### **Final Score**: 87.80% (Public) / 87.00% (Private) 
+### **Rank**: 27/200 🏆
 
 ---
 
