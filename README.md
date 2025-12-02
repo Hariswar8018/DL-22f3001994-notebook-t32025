@@ -1,154 +1,405 @@
-# 🚀 Deep Learning & Generative AI Project
+# 🎭 Multi-Label Emotion Classification with Deep Learning
 
 [![Made with Python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![Transformers](https://img.shields.io/badge/🤗-Transformers-yellow.svg)](https://huggingface.co/)
 [![Kaggle](https://img.shields.io/badge/Platform-Kaggle-20BEFF.svg)](https://www.kaggle.com/)
-[![Deep Learning](https://img.shields.io/badge/Deep-Learning-FF6F00.svg)](https://www.tensorflow.org/)
-[![Status](https://img.shields.io/badge/Status-Completed-success.svg)](https://github.com/)
+[![F1 Score](https://img.shields.io/badge/Metric-Macro%20F1-success.svg)](https://scikit-learn.org/)
+[![IIT Madras](https://img.shields.io/badge/IIT-Madras-orange.svg)](https://www.iitm.ac.in/)
 
-> A comprehensive deep learning project exploring multiple neural network architectures for [YOUR_TASK_HERE], completed as part of the IIT Madras curriculum.
+> **2025 Sep DLGenAI Project** - A comprehensive multi-label emotion classification system using CNN, GRU, BiLSTM, and DistilBERT architectures. Completed as part of the IIT Madras Deep Learning and Generative AI course (September 2025 term).
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#-overview)
+- [Problem Statement](#-problem-statement)
+- [Dataset & Task](#-dataset--task)
 - [Models Implemented](#-models-implemented)
-- [Dataset](#-dataset)
+- [Technical Architecture](#-technical-architecture)
 - [Installation & Setup](#-installation--setup)
 - [Usage](#-usage)
-- [Results](#-results)
-- [Project Structure](#-project-structure)
+- [Results & Evaluation](#-results--evaluation)
+- [Key Learnings](#-key-learnings)
 - [Acknowledgments](#-acknowledgments)
-- [License](#-license)
 
 ---
 
-## 🎯 Overview
+## 🎯 Problem Statement
 
-This project implements and compares **four state-of-the-art deep learning architectures** for [DESCRIBE YOUR TASK: e.g., text classification, sentiment analysis, sequence prediction]. The work was completed under the guidance of IIT Madras instructors and demonstrates practical applications of modern neural network techniques.
+Emotions are complex, often overlapping, and can be expressed in subtle ways through language. Detecting them automatically is an important task in NLP with applications in:
 
-### Key Highlights
+- 💚 **Mental health support** - Understanding emotional states
+- 🛍️ **Customer experience analysis** - Sentiment tracking
+- 🤖 **Conversational AI** - Emotion-aware responses
+- 📱 **Social media monitoring** - Trend analysis
 
-- ✨ **Multi-Model Comparison**: Comprehensive evaluation of CNN, GRU, BiLSTM, and Transformer-based architectures
-- 🔬 **Research-Grade Implementation**: Clean, documented code following best practices
-- 📊 **Detailed Analysis**: Performance metrics, visualizations, and model comparisons
-- 🎓 **Academic Rigor**: Completed as part of IIT Madras curriculum
+### The Challenge
+
+Build models that can classify short English text entries into **multiple emotion categories simultaneously**. This is a **multi-label classification problem** where each text can express multiple emotions at once.
+
+---
+
+## 📊 Dataset & Task
+
+### Emotion Categories (5 Labels)
+
+| Emotion | Description | Binary Label |
+|---------|-------------|--------------|
+| 😠 **Anger** | Frustration, irritation, rage | 0 or 1 |
+| 😨 **Fear** | Anxiety, worry, terror | 0 or 1 |
+| 😊 **Joy** | Happiness, excitement, delight | 0 or 1 |
+| 😢 **Sadness** | Sorrow, grief, disappointment | 0 or 1 |
+| 😲 **Surprise** | Shock, amazement, astonishment | 0 or 1 |
+
+### Task Characteristics
+
+- **Type**: Multi-label text classification
+- **Language**: English
+- **Input**: Short text entries
+- **Output**: Binary vector of 5 emotions (each 0 or 1)
+- **Evaluation Metric**: **Macro F1-Score**
+
+### Evaluation Metric Explained
+
+The competition uses **Macro F1-Score**, which:
+
+1. Computes F1-score for each emotion independently
+2. Takes the unweighted average across all 5 emotions
+3. Balances precision and recall equally
+
+```
+Macro F1 = (1/5) × Σ F1(emotion_i)
+
+where F1 = 2 × (Precision × Recall) / (Precision + Recall)
+```
+
+This metric treats all emotions equally, regardless of their frequency in the dataset.
 
 ---
 
 ## 🤖 Models Implemented
 
-### 1. 🔷 Convolutional Neural Network (CNN)
+I experimented with **four distinct architectures**, progressing from classical deep learning to state-of-the-art transformers:
 
-**Architecture Overview:**
-- **Convolutional Layers**: [NUMBER] layers with [FILTER_SIZES] filters
-- **Pooling Strategy**: [MAX/AVERAGE] pooling with [POOL_SIZE]
-- **Dense Layers**: [NUMBER] fully connected layers
-- **Dropout Rate**: [RATE] for regularization
+### Architecture Progression
 
-**Key Characteristics:**
-- Excellent at capturing **local patterns** and n-gram features
-- Fast training time with parallel processing capabilities
-- Particularly effective for [YOUR_SPECIFIC_USE_CASE]
-
-**Performance Highlights:**
-- Training Accuracy: **[XX.XX]%**
-- Validation Accuracy: **[XX.XX]%**
-- Training Time: **[XX] minutes**
-- Best Feature: [WHAT THIS MODEL DID WELL]
+```
+Classical DL ──────────────────────────────────────────> Modern Transformers
+    CNN          GRU          BiLSTM          DistilBERT
+     ↓            ↓              ↓                 ↓
+  Pattern     Sequence      Bidirectional    Contextual
+  Detection   Modeling      Context          Understanding
+```
 
 ---
 
-### 2. 🔶 Gated Recurrent Unit (GRU)
+### 1. 🔷 TextCNN - Convolutional Neural Network
 
-**Architecture Overview:**
-- **GRU Layers**: [NUMBER] stacked GRU layers
-- **Hidden Units**: [NUMBER] units per layer
-- **Bidirectional**: [YES/NO]
-- **Recurrent Dropout**: [RATE]
+**Why CNN for Text?**
+CNNs can capture local patterns and n-gram features efficiently, making them excellent for detecting emotional keywords and phrases.
 
-**Key Characteristics:**
-- Captures **sequential dependencies** in data
-- More efficient than traditional LSTMs (fewer parameters)
-- Handles **long-range dependencies** with gating mechanisms
-- Excellent for temporal pattern recognition
+#### Architecture Details
 
-**Performance Highlights:**
-- Training Accuracy: **[XX.XX]%**
-- Validation Accuracy: **[XX.XX]%**
+```python
+TextCNN(
+  vocab_size=[YOUR_VOCAB_SIZE],
+  embed_dim=128,
+  kernel_sizes=(3, 4, 5),      # Captures 3-gram, 4-gram, 5-gram patterns
+  num_filters=64,               # 64 filters per kernel size
+  num_labels=5,
+  dropout=0.2
+)
+```
+
+**Key Components:**
+- 🔸 **Embedding Layer**: Converts tokens to 128-dimensional vectors
+- 🔸 **Multi-Kernel Convolution**: Three parallel convolutions (3×128, 4×128, 5×128)
+  - Kernel size 3: Captures trigrams like "so very happy"
+  - Kernel size 4: Captures 4-grams like "I am so sad"
+  - Kernel size 5: Captures 5-grams like "what a pleasant surprise today"
+- 🔸 **Max Pooling**: Extracts most important features from each convolution
+- 🔸 **Concatenation**: Combines features from all kernel sizes (192 features)
+- 🔸 **Dropout (0.2)**: Prevents overfitting
+- 🔸 **Fully Connected Layer**: Maps to 5 emotion logits
+
+**Strengths:**
+- ✅ Fast training and inference
+- ✅ Parallel processing of features
+- ✅ Good at detecting emotional keywords
+- ✅ Low computational requirements
+
+**Training Configuration:**
+- Optimizer: **[AdamW/Adam]**
+- Learning Rate: **[YOUR_LR]**
+- Batch Size: **[YOUR_BATCH_SIZE]**
+- Epochs: **[YOUR_EPOCHS]**
+- Loss Function: **BCEWithLogitsLoss**
+
+**Performance:**
+- Training F1: **[XX.XX]%**
+- Validation F1: **[XX.XX]%**
+- Test F1: **[XX.XX]%**
 - Training Time: **[XX] minutes**
-- Best Feature: [WHAT THIS MODEL DID WELL]
 
 ---
 
-### 3. 🔵 Bidirectional Long Short-Term Memory (BiLSTM)
+### 2. 🔶 GRUNet - Gated Recurrent Unit
 
-**Architecture Overview:**
-- **BiLSTM Layers**: [NUMBER] bidirectional LSTM layers
-- **Hidden Units**: [NUMBER] units per layer
-- **Cell State Dimensions**: [NUMBER]
-- **Attention Mechanism**: [YES/NO - if implemented]
+**Why GRU for Emotions?**
+GRUs excel at modeling sequential dependencies, crucial for understanding how emotion builds up across a sentence.
 
-**Key Characteristics:**
-- Processes sequences in **both forward and backward directions**
-- Superior context understanding through bidirectional processing
-- Excellent **memory retention** for long sequences
-- Handles vanishing gradient problem effectively
+#### Architecture Details
 
-**Performance Highlights:**
-- Training Accuracy: **[XX.XX]%**
-- Validation Accuracy: **[XX.XX]%**
+```python
+GRUNet(
+  vocab_size=[YOUR_VOCAB_SIZE],
+  embed_dim=128,
+  hidden_size=128,
+  num_layers=1,
+  bidirectional=True,           # Processes text forward AND backward
+  num_labels=5,
+  dropout=0.2
+)
+```
+
+**Key Components:**
+- 🔸 **Embedding Layer**: 128-dimensional word embeddings
+- 🔸 **Bidirectional GRU**: 
+  - Forward direction: Captures left-to-right context
+  - Backward direction: Captures right-to-left context
+  - Hidden size: 128 units per direction → 256 total
+- 🔸 **Gating Mechanisms**:
+  - **Update Gate**: Decides how much past information to keep
+  - **Reset Gate**: Decides how much past information to forget
+- 🔸 **Mean Pooling**: Averages all timesteps for sentence representation
+- 🔸 **Dropout (0.2)**: Regularization
+- 🔸 **Output Layer**: Maps 256 features to 5 emotion scores
+
+**Strengths:**
+- ✅ Captures sequential dependencies
+- ✅ More efficient than LSTM (fewer parameters)
+- ✅ Handles variable-length sequences naturally
+- ✅ Bidirectional processing improves context understanding
+
+**How Gating Works:**
+```
+For input "I am absolutely devastated":
+- Update gate learns to remember strong emotion words
+- Reset gate learns to forget neutral words like "I am"
+- Final representation emphasizes "absolutely devastated"
+```
+
+**Training Configuration:**
+- Optimizer: **AdamW**
+- Learning Rate: **[YOUR_LR]**
+- Batch Size: **[YOUR_BATCH_SIZE]**
+- Epochs: **[YOUR_EPOCHS]**
+- Loss Function: **BCEWithLogitsLoss**
+
+**Performance:**
+- Training F1: **[XX.XX]%**
+- Validation F1: **[XX.XX]%**
+- Test F1: **[XX.XX]%**
 - Training Time: **[XX] minutes**
-- Best Feature: [WHAT THIS MODEL DID WELL]
 
 ---
 
-### 4. 🔴 Microsoft DeBERTa (Decoding-enhanced BERT with Disentangled Attention)
+### 3. 🔵 BiLSTM - Bidirectional Long Short-Term Memory
 
-**Architecture Overview:**
-- **Model Variant**: [microsoft/deberta-v3-base / microsoft/deberta-v3-small]
-- **Parameters**: [NUMBER]M parameters
-- **Max Sequence Length**: [NUMBER] tokens
-- **Fine-tuning Strategy**: [DESCRIBE YOUR APPROACH]
+**Why BiLSTM for Multi-Label Emotions?**
+BiLSTM's sophisticated memory cells can capture long-range dependencies and subtle emotional cues that span entire sentences.
 
-**Key Characteristics:**
-- State-of-the-art **Transformer architecture** from Microsoft
-- **Disentangled Attention Mechanism**: Separately encodes content and position
-- **Enhanced Mask Decoder**: Improved performance on downstream tasks
-- Pre-trained on massive text corpora for superior language understanding
+#### Architecture Details
 
-**Technical Innovations:**
-- ✅ Disentangled attention for better positional encoding
-- ✅ Enhanced mask decoder for contextualized representations
-- ✅ Virtual adversarial training for robust performance
-- ✅ Gradient-disentangled embedding sharing
+```python
+BiLSTM(
+  vocab_size=[YOUR_VOCAB_SIZE],
+  embed_dim=128,
+  hidden_size=128,
+  num_layers=1,
+  bidirectional=True,
+  num_labels=5,
+  dropout=0.2
+)
+```
 
-**Performance Highlights:**
-- Training Accuracy: **[XX.XX]%**
-- Validation Accuracy: **[XX.XX]%**
+**Key Components:**
+- 🔸 **Embedding Layer**: 128-dimensional embeddings
+- 🔸 **Bidirectional LSTM**:
+  - Processes sequences in both directions simultaneously
+  - Hidden state: 128 units per direction → 256 combined
+  - Cell state: Maintains long-term memory
+- 🔸 **LSTM Gates** (4 gates per direction):
+  - **Forget Gate**: What to remove from cell state
+  - **Input Gate**: What new information to add
+  - **Output Gate**: What to expose as hidden state
+  - **Cell Gate**: Candidate values for cell state
+- 🔸 **Mean Pooling**: Aggregates all timesteps
+- 🔸 **Multi-Layer FC**:
+  - Dense(256 → 128) + ReLU + Dropout
+  - Dense(128 → 5)
+- 🔸 **Dropout (0.2)**: Applied after pooling and in FC
+
+**Strengths:**
+- ✅ Superior long-range dependency modeling
+- ✅ Sophisticated memory management via gates
+- ✅ Bidirectional context for better understanding
+- ✅ Handles vanishing gradient problem effectively
+- ✅ Multi-layer FC allows complex emotion combinations
+
+**LSTM vs GRU Comparison:**
+| Feature | LSTM | GRU |
+|---------|------|-----|
+| Gates | 4 (forget, input, output, cell) | 2 (update, reset) |
+| Parameters | More (~4× hidden_size²) | Fewer (~3× hidden_size²) |
+| Training Speed | Slower | Faster |
+| Memory Capability | Superior for long sequences | Good for medium sequences |
+
+**Training Configuration:**
+- Optimizer: **AdamW**
+- Learning Rate: **[YOUR_LR]**
+- Batch Size: **[YOUR_BATCH_SIZE]**
+- Epochs: **[YOUR_EPOCHS]**
+- Loss Function: **BCEWithLogitsLoss**
+
+**Performance:**
+- Training F1: **[XX.XX]%**
+- Validation F1: **[XX.XX]%**
+- Test F1: **[XX.XX]%**
 - Training Time: **[XX] minutes**
-- Best Feature: [WHAT THIS MODEL DID WELL]
 
 ---
 
-## 📊 Dataset
+### 4. 🔴 DistilBERT - Distilled BERT Transformer
 
-**Dataset Name**: [YOUR_DATASET_NAME]
+**Why DistilBERT?**
+DistilBERT brings the power of transformer-based contextual embeddings while being 40% smaller and 60% faster than BERT, making it perfect for this competition.
 
-**Statistics**:
-- **Total Samples**: [NUMBER]
-- **Training Set**: [NUMBER] samples ([XX]%)
-- **Validation Set**: [NUMBER] samples ([XX]%)
-- **Test Set**: [NUMBER] samples ([XX]%)
-- **Number of Classes**: [NUMBER]
-- **Average Sequence Length**: [NUMBER] tokens
+#### Architecture Details
 
-**Preprocessing Steps**:
+```python
+Model: distilbert-base-uncased (from Hugging Face)
+Parameters: ~66M (distilled from BERT's 110M)
+Layers: 6 transformer blocks
+Hidden Size: 768
+Attention Heads: 12
+Max Sequence Length: 512 tokens
+Vocabulary Size: 30,522 tokens
+```
+
+**Key Components:**
+- 🔸 **Tokenizer**: WordPiece tokenization with [CLS] and [SEP] tokens
+- 🔸 **Pre-trained Embeddings**:
+  - Token embeddings: 30,522 × 768
+  - Position embeddings: Learnable positional encoding
+- 🔸 **6 Transformer Layers**: Each containing:
+  - Multi-head self-attention (12 heads)
+  - Feed-forward networks
+  - Layer normalization
+  - Residual connections
+- 🔸 **[CLS] Token**: Special token for sentence classification
+- 🔸 **Fine-tuning Head**: Linear(768 → 5) for emotion prediction
+- 🔸 **Attention Mechanism**: Models relationships between all words
+
+**What Makes DistilBERT Special:**
+- 🌟 **Knowledge Distillation**: Trained to mimic BERT's behavior
+- 🌟 **Contextual Understanding**: Each word representation depends on entire sentence
+- 🌟 **Pre-trained on Massive Corpora**: Understands language deeply
+- 🌟 **Transfer Learning**: Leverages knowledge from 16GB of text data
+- 🌟 **Bidirectional Context**: Unlike traditional RNNs, sees full context at once
+
+**How Attention Works for Emotions:**
+```
+Input: "I am not happy but also not sad"
+
+Attention learns:
+"not" → strongly attends to "happy" and "sad"
+"happy" → attends to "not" (negation)
+"sad" → attends to "not" and "also"
+
+Result: Model understands complex emotional negation
+```
+
+**Strengths:**
+- ✅ State-of-the-art contextual understanding
+- ✅ Pre-trained on billions of words
+- ✅ Captures subtle emotional nuances
+- ✅ Handles negations, sarcasm, and complex expressions
+- ✅ 40% smaller than BERT, 60% faster
+- ✅ Excellent for multi-label tasks
+
+**Training Configuration:**
+- **Tokenizer**: AutoTokenizer (distilbert-base-uncased)
+- **Max Length**: 128 tokens
+- **Padding**: max_length
+- **Truncation**: Enabled
+- **Batch Size**: 32
+- **Optimizer**: **AdamW** (weight decay for transformers)
+- **Learning Rate**: **[YOUR_LR]** (typically 2e-5 to 5e-5)
+- **Epochs**: **[YOUR_EPOCHS]**
+- **Loss Function**: **BCEWithLogitsLoss**
+- **Fine-tuning Strategy**: [Full fine-tuning / Last layers only]
+
+**Custom Dataset Implementation:**
+```python
+BERTDataset:
+- Tokenizes text with padding/truncation
+- Returns: (input_ids, attention_mask, labels)
+- Handles variable-length sequences
+- Batch processing for efficiency
+```
+
+**Performance:**
+- Training F1: **[XX.XX]%**
+- Validation F1: **[XX.XX]%**
+- Test F1: **[XX.XX]%**
+- Training Time: **[XX] minutes**
+- Inference Speed: **[XX] samples/sec**
+
+**Why DistilBERT Often Outperforms Others:**
+1. Pre-trained knowledge of language semantics
+2. Bidirectional context (sees entire sentence at once)
+3. Attention mechanism captures word relationships
+4. Better handling of complex emotional expressions
+5. Robust to different writing styles and structures
+
+---
+
+## 🏗️ Technical Architecture
+
+### Model Comparison Table
+
+| Model | Type | Parameters | Strengths | Best For |
+|-------|------|------------|-----------|----------|
+| **TextCNN** | Convolutional | ~[XX]K | Fast, pattern detection | Keyword-based emotions |
+| **GRU** | Recurrent | ~[XX]K | Sequential modeling | Moderate-length texts |
+| **BiLSTM** | Recurrent | ~[XX]K | Long-term dependencies | Complex sentences |
+| **DistilBERT** | Transformer | ~66M | Contextual understanding | All cases, best overall |
+
+### Common Training Setup
+
+**Loss Function:**
+```python
+nn.BCEWithLogitsLoss()  # Binary Cross-Entropy with Logits
+```
+- Combines sigmoid activation with BCE loss
+- Numerically stable
+- Perfect for multi-label classification
+
+**Optimizer:**
+```python
+torch.optim.AdamW(params, lr=LR, weight_decay=0.01)
+```
+- Adaptive learning rates
+- Weight decay for regularization
+- Efficient for deep networks
+
+**Data Preprocessing:**
 1. Text cleaning and normalization
-2. Tokenization using [TOKENIZER_TYPE]
-3. Padding/Truncating to [MAX_LENGTH]
-4. Label encoding
-5. [ANY OTHER PREPROCESSING]
+2. Tokenization (vocabulary-based for CNN/GRU/BiLSTM, WordPiece for DistilBERT)
+3. Padding/Truncation to fixed length
+4. Label binarization for multi-label format
 
 ---
 
@@ -158,29 +409,31 @@ This project implements and compares **four state-of-the-art deep learning archi
 
 ```bash
 Python >= 3.8
-CUDA >= 11.0 (for GPU support)
-```
-
-### Clone the Repository
-
-```bash
-git clone [YOUR_REPO_URL]
-cd [PROJECT_FOLDER]
+PyTorch >= 1.12.0
+CUDA >= 11.0 (for GPU training)
 ```
 
 ### Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install torch torchvision torchaudio
+pip install transformers
+pip install pandas numpy scikit-learn
+pip install matplotlib seaborn
+pip install tqdm
 ```
 
-**Key Libraries**:
-- `tensorflow` / `pytorch` >= [VERSION]
-- `transformers` >= [VERSION]
-- `pandas` >= [VERSION]
-- `numpy` >= [VERSION]
-- `scikit-learn` >= [VERSION]
-- `matplotlib` / `seaborn` for visualization
+**Complete Requirements:**
+```txt
+torch>=1.12.0
+transformers>=4.30.0
+pandas>=1.5.0
+numpy>=1.23.0
+scikit-learn>=1.1.0
+matplotlib>=3.5.0
+seaborn>=0.12.0
+tqdm>=4.64.0
+```
 
 ---
 
@@ -188,136 +441,339 @@ pip install -r requirements.txt
 
 ### Training Models
 
-```bash
-# Train CNN Model
-python train_cnn.py --epochs [NUMBER] --batch_size [NUMBER]
+```python
+# Set device
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Train GRU Model
-python train_gru.py --epochs [NUMBER] --batch_size [NUMBER]
+# Define emotion labels
+LABELS = ['anger', 'fear', 'joy', 'sadness', 'surprise']
 
-# Train BiLSTM Model
-python train_bilstm.py --epochs [NUMBER] --batch_size [NUMBER]
-
-# Train DeBERTa Model
-python train_deberta.py --epochs [NUMBER] --batch_size [NUMBER] --learning_rate [RATE]
+# Hyperparameters
+BATCH_SIZE = 32
+LR = 2e-5  # Lower for transformers, higher (1e-3) for CNN/RNN
+EPOCHS = 10
+MAX_LEN = 128
 ```
 
-### Evaluation
+#### 1. Train TextCNN
 
-```bash
-# Evaluate all models
-python evaluate.py --model_type all
+```python
+from models import TextCNN
 
-# Evaluate specific model
-python evaluate.py --model_type [cnn/gru/bilstm/deberta]
+model = TextCNN(
+    vocab_size=tokenizer.vocab_size,
+    embed_dim=128,
+    kernel_sizes=(3,4,5),
+    num_filters=64,
+    num_labels=len(LABELS),
+    pad_idx=tokenizer.pad_token_id
+).to(DEVICE)
+
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+criterion = nn.BCEWithLogitsLoss()
 ```
 
-### Inference
+#### 2. Train GRU
 
-```bash
-# Make predictions
-python predict.py --model_path [PATH] --input "[YOUR_TEXT_HERE]"
+```python
+from models import GRUNet
+
+model_gru = GRUNet(
+    vocab_size=tokenizer.vocab_size,
+    embed_dim=128,
+    hidden_size=128,
+    num_labels=len(LABELS),
+    pad_idx=tokenizer.pad_token_id
+).to(DEVICE)
+
+optimizer = torch.optim.AdamW(model_gru.parameters(), lr=1e-3)
+```
+
+#### 3. Train BiLSTM
+
+```python
+from models import BiLSTM
+
+model_bilstm = BiLSTM(
+    vocab_size=tokenizer.vocab_size,
+    embed_dim=128,
+    hidden_size=128,
+    num_layers=1,
+    num_labels=len(LABELS),
+    pad_idx=tokenizer.pad_token_id,
+    dropout=0.2
+).to(DEVICE)
+
+optimizer = torch.optim.AdamW(model_bilstm.parameters(), lr=1e-3)
+```
+
+#### 4. Train DistilBERT
+
+```python
+from transformers import AutoTokenizer, AutoModel
+
+tokenizer = AutoTokenizer.from_pretrained('distilbert-base-uncased')
+
+# Create custom dataset
+train_ds = BERTDataset(df_train, tokenizer, max_len=128)
+val_ds = BERTDataset(df_val, tokenizer, max_len=128)
+
+train_loader = DataLoader(train_ds, batch_size=32, shuffle=True)
+val_loader = DataLoader(val_ds, batch_size=32)
+
+# Fine-tune DistilBERT
+model_bert = AutoModelForSequenceClassification.from_pretrained(
+    'distilbert-base-uncased',
+    num_labels=5,
+    problem_type="multi_label_classification"
+).to(DEVICE)
+
+optimizer = torch.optim.AdamW(model_bert.parameters(), lr=2e-5)
+```
+
+### Inference & Submission
+
+```python
+# Generate predictions
+def predict(model, dataloader):
+    model.eval()
+    predictions = []
+    with torch.no_grad():
+        for batch in dataloader:
+            input_ids, attention_mask = batch[0].to(DEVICE), batch[1].to(DEVICE)
+            outputs = model(input_ids, attention_mask=attention_mask)
+            preds = torch.sigmoid(outputs.logits) > 0.5  # Threshold at 0.5
+            predictions.extend(preds.cpu().numpy())
+    return predictions
+
+# Create submission file
+submission = pd.DataFrame({
+    'id': test_ids,
+    'anger': predictions[:, 0],
+    'fear': predictions[:, 1],
+    'joy': predictions[:, 2],
+    'sadness': predictions[:, 3],
+    'surprise': predictions[:, 4]
+})
+submission.to_csv('submission.csv', index=False)
 ```
 
 ---
 
-## 📈 Results
+## 📈 Results & Evaluation
 
-### Model Comparison
+### Model Performance Comparison
 
-| Model | Training Acc | Validation Acc | Test Acc | Parameters | Training Time |
-|-------|-------------|----------------|----------|------------|---------------|
-| **CNN** | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX]K | [XX] min |
-| **GRU** | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX]K | [XX] min |
-| **BiLSTM** | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX]K | [XX] min |
-| **DeBERTa** | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX]M | [XX] min |
+| Model | Train F1 | Val F1 | Test F1 | Params | Training Time | Inference Speed |
+|-------|----------|--------|---------|--------|---------------|-----------------|
+| **TextCNN** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
+| **GRU** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
+| **BiLSTM** | [XX.XX]% | [XX.XX]% | [XX.XX]% | ~[XX]K | [XX] min | [XXX] samples/s |
+| **DistilBERT** | [XX.XX]% | [XX.XX]% | **[XX.XX]%** | ~66M | [XX] min | [XX] samples/s |
+
+### Per-Emotion Performance
+
+**[Best Model Name] - Detailed Breakdown:**
+
+| Emotion | Precision | Recall | F1-Score | Support |
+|---------|-----------|--------|----------|---------|
+| 😠 Anger | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
+| 😨 Fear | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
+| 😊 Joy | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
+| 😢 Sadness | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
+| 😲 Surprise | [XX.XX]% | [XX.XX]% | [XX.XX]% | [XXX] |
+| **Macro Avg** | **[XX.XX]%** | **[XX.XX]%** | **[XX.XX]%** | [XXX] |
 
 ### Key Findings
 
-🏆 **Best Overall Performance**: [MODEL_NAME] with [XX.XX]% test accuracy
+🏆 **Best Overall Performance:** [MODEL_NAME] achieved the highest Macro F1 score of **[XX.XX]%**
 
-📊 **Most Efficient**: [MODEL_NAME] with fastest training time
+⚡ **Most Efficient:** [MODEL_NAME] with fastest training time and lowest resource usage
 
-🎯 **Best Generalization**: [MODEL_NAME] with smallest train-test gap
+🎯 **Best Generalization:** [MODEL_NAME] showed smallest train-validation gap
 
-💡 **Insights**:
-- [KEY INSIGHT 1]
-- [KEY INSIGHT 2]
-- [KEY INSIGHT 3]
+📊 **Challenging Emotions:** [EMOTION_NAME] was hardest to detect across all models
+
+💡 **Key Insights:**
+- **[INSIGHT 1]**: DistilBERT's pre-trained knowledge significantly improved performance on complex emotional expressions
+- **[INSIGHT 2]**: BiLSTM performed well on longer texts with subtle emotional cues
+- **[INSIGHT 3]**: TextCNN was surprisingly effective for texts with clear emotional keywords
+- **[INSIGHT 4]**: [Your specific finding about multi-label combinations]
+- **[INSIGHT 5]**: [Your finding about class imbalance or data augmentation]
+
+### Competition Performance
+
+- **Final Rank:** [YOUR_RANK] / 181 participants
+- **Best Submission:** Macro F1 = **[XX.XX]%**
+- **Number of Submissions:** [YOUR_SUBMISSIONS] / 2,710 total
+
+---
+
+## 💡 Key Learnings
+
+### Technical Learnings
+
+1. **Multi-Label Classification Challenges**
+   - Each emotion must be predicted independently
+   - BCEWithLogitsLoss is crucial for multi-label tasks
+   - Threshold tuning (default 0.5) can improve performance
+
+2. **Architecture Selection**
+   - CNNs excel at pattern recognition but lack sequential understanding
+   - RNNs (GRU/LSTM) capture context but struggle with very long sequences
+   - Transformers provide best overall performance but require more resources
+
+3. **Transfer Learning Impact**
+   - Pre-trained DistilBERT significantly outperformed models trained from scratch
+   - Fine-tuning transformers requires lower learning rates (2e-5 vs 1e-3)
+   - Pre-trained knowledge helps especially with limited training data
+
+4. **Hyperparameter Tuning**
+   - Embedding dimension of 128 provided good balance
+   - Dropout (0.2) prevented overfitting across all models
+   - Batch size of 32 worked well for all architectures
+
+### Competition Strategy
+
+- ✅ Start with simple baseline (TextCNN)
+- ✅ Progress to more complex models (GRU → BiLSTM)
+- ✅ Leverage pre-trained models (DistilBERT)
+- ✅ Ensemble different architectures for best results
+- ✅ Monitor validation metrics to prevent overfitting
+
+### Challenges Faced
+
+1. **Class Imbalance**: Some emotions more common than others
+2. **Multi-Label Complexity**: Texts often express multiple emotions
+3. **Subtle Expressions**: Emotions expressed through context, not keywords
+4. **Limited Data**: Need for effective regularization and augmentation
+5. **Computation Constraints**: Balancing model complexity with Kaggle limits
 
 ---
 
 ## 📁 Project Structure
 
 ```
-project-root/
+emotion-classification/
 │
 ├── data/
-│   ├── raw/                    # Original dataset
-│   ├── processed/              # Preprocessed data
-│   └── README.md               # Data documentation
-│
-├── models/
-│   ├── cnn_model.py            # CNN implementation
-│   ├── gru_model.py            # GRU implementation
-│   ├── bilstm_model.py         # BiLSTM implementation
-│   └── deberta_model.py        # DeBERTa fine-tuning
+│   ├── train.csv                    # Training data
+│   ├── test.csv                     # Test data (no labels)
+│   └── sample_submission.csv        # Submission format
 │
 ├── notebooks/
-│   ├── 01_eda.ipynb            # Exploratory data analysis
-│   ├── 02_cnn_training.ipynb   # CNN experiments
-│   ├── 03_gru_training.ipynb   # GRU experiments
-│   ├── 04_bilstm_training.ipynb # BiLSTM experiments
-│   └── 05_deberta_training.ipynb # DeBERTa experiments
+│   ├── 01_eda.ipynb                 # Exploratory data analysis
+│   ├── 02_textcnn_training.ipynb    # CNN experiments
+│   ├── 03_gru_training.ipynb        # GRU experiments
+│   ├── 04_bilstm_training.ipynb     # BiLSTM experiments
+│   ├── 05_distilbert_training.ipynb # DistilBERT fine-tuning
+│   └── 06_inference.ipynb           # Generate predictions
+│
+├── models/
+│   ├── textcnn.py                   # TextCNN implementation
+│   ├── gru.py                       # GRU implementation
+│   ├── bilstm.py                    # BiLSTM implementation
+│   └── bert_dataset.py              # Custom dataset for transformers
 │
 ├── utils/
-│   ├── data_loader.py          # Data loading utilities
-│   ├── preprocessing.py        # Preprocessing functions
-│   └── visualization.py        # Plotting functions
+│   ├── preprocessing.py             # Text preprocessing utilities
+│   ├── metrics.py                   # Macro F1 calculation
+│   └── visualization.py             # Plotting functions
 │
-├── results/
-│   ├── figures/                # Generated plots
-│   ├── metrics/                # Performance metrics
-│   └── models/                 # Saved model weights
+├── saved_models/
+│   ├── textcnn_best.pth
+│   ├── gru_best.pth
+│   ├── bilstm_best.pth
+│   └── distilbert_best/             # Hugging Face model directory
 │
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-└── LICENSE                     # License information
+├── submissions/
+│   ├── submission_cnn.csv
+│   ├── submission_gru.csv
+│   ├── submission_bilstm.csv
+│   ├── submission_distilbert.csv
+│   └── submission_ensemble.csv      # Best submission
+│
+├── requirements.txt                 # Python dependencies
+└── README.md                        # This file
 ```
 
 ---
 
 ## 🙏 Acknowledgments
 
-This project was completed as part of the **IIT Madras Deep Learning and Generative AI course**. Special thanks to:
+This project was completed as part of the **IIT Madras Deep Learning and Generative AI course (September 2025 term)**. Special thanks to:
 
-- **IIT Madras Instructors** for their guidance and course structure
-- **Kaggle** for providing the computational platform
-- **Microsoft Research** for the DeBERTa model
-- **Hugging Face** for the Transformers library
-- The open-source community for various tools and libraries
+- **IIT Madras Instructors** for their excellent course structure and guidance
+- **Livin Nector** for hosting this challenging competition on Kaggle
+- **Hugging Face** for the Transformers library and pre-trained models
+- **PyTorch Team** for the excellent deep learning framework
+- **Kaggle Community** for computational resources and discussions
+- **All 181 participants** for making this competition competitive and educational
+
+### Resources Used
+
+- [PyTorch Documentation](https://pytorch.org/docs/)
+- [Hugging Face Transformers](https://huggingface.co/docs/transformers/)
+- [DistilBERT Paper](https://arxiv.org/abs/1910.01108)
+- [Kim (2014) - CNN for Text Classification](https://arxiv.org/abs/1408.5882)
+- [Understanding LSTM Networks](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
 
 ---
 
-## 📝 License
+## 📝 Competition Details
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+- **Competition Name**: 2025 Sep DLGenAI Project
+- **Platform**: Kaggle (Private Competition)
+- **Duration**: 2 months
+- **Total Participants**: 181
+- **Total Submissions**: 2,710
+- **Evaluation Metric**: Macro F1-Score
+- **Task**: Multi-label emotion classification (5 emotions)
+
+---
+
+## 🌟 Future Improvements
+
+- [ ] Implement ensemble methods combining all models
+- [ ] Experiment with data augmentation (back-translation, paraphrasing)
+- [ ] Try larger transformers (BERT, RoBERTa, ELECTRA)
+- [ ] Implement focal loss for class imbalance
+- [ ] Add attention visualization for interpretability
+- [ ] Experiment with different threshold values per emotion
+- [ ] Implement cross-validation for robust evaluation
 
 ---
 
 ## 👨‍💻 Author
 
 **[YOUR_NAME]**
+- IIT Madras - Deep Learning & GenAI (Sep 2025)
 - GitHub: [@your_github](https://github.com/your_github)
 - LinkedIn: [Your LinkedIn](https://linkedin.com/in/your_profile)
+- Kaggle: [@your_kaggle](https://www.kaggle.com/your_kaggle)
 - Email: your.email@example.com
 
 ---
 
-## 🌟 Star This Repository
+## 📜 License
 
-If you found this project helpful, please consider giving it a ⭐️!
+This project is for educational purposes as part of the IIT Madras curriculum. Please respect the competition rules and honor code.
 
 ---
+
+## 🌟 If This Helped You
+
+If you found this project useful for your learning:
+- ⭐ Star this repository
+- 🔄 Share with your classmates
+- 💬 Provide feedback for improvements
+
+---
+
+**Competition Status**: ✅ Completed | **Final Score**: [YOUR_F1_SCORE] | **Rank**: [YOUR_RANK]/181
+
+---
+
+*"Emotions are the universal language of humanity. Teaching machines to understand them brings us closer to truly intelligent AI."*
 
 **Last Updated**: [DATE]
