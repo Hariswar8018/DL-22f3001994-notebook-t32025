@@ -14,12 +14,12 @@
 The model is live on Hugging Face Spaces with a full UI, real-time inference, dataset explanation, and project documentation.
 <img width="1366" height="768" alt="Screenshot (420)" src="https://github.com/user-attachments/assets/34b358c5-c82f-4ac5-9301-72f523be8c38" />
 
-#### (Click here to see the Hugging Face Deployment )["https://huggingface.co/spaces/AyusmanSamasi/Sentimental_Analysis"]
-##### and Experience real-time multi-label emotion classification powered by DeBERTa-v3.
+#### [Click here to see the Hugging Face Deployment](https://huggingface.co/spaces/AyusmanSamasi/Sentimental_Analysis)
+Experience real-time multi-label emotion classification powered by DeBERTa-v3.
 
-#### (Click here to see Project Report)["https://drive.google.com/file/d/10vRR0zuFbYP8pIU7ZQBYHqyIQo__OPhk/view?usp=sharing"]
-#### (Click here to view the Notebook )["https://www.kaggle.com/code/samasiayushman/dl-22f3001994-notebook-t32025"]
+#### [Click here to see Project Report](https://drive.google.com/file/d/10vRR0zuFbYP8pIU7ZQBYHqyIQo__OPhk/view?usp=sharing)
 
+#### [Click here to view the Notebook](https://www.kaggle.com/code/samasiayushman/dl-22f3001994-notebook-t32025)
 ---
 
 ## 📋 Table of Contents
